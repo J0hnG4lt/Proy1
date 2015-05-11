@@ -45,6 +45,16 @@ struct facelooks{
 typedef struct facelooks facelook;
 
 
+struct pares{
+
+	lista *x;
+	lista *y;
+
+};
+
+typedef struct pares par;
+
+
 
 void insertar_amigo(lista *mi_lista ,char *nombre_amigo){
 
@@ -101,7 +111,12 @@ void insertar_perfil(facelook *base_datos, lista *nuevo_usuario){
 void imprimir_lista(lista *mi_lista){
 
 	nodo *nodo_act = mi_lista->primero;
-	printf("%s ->",mi_lista->nombre_x);
+	if (mi_lista->nombre_y == NULL){
+		printf("%s ->",mi_lista->nombre_x);
+	}
+	else{
+		printf("%s %s ->",mi_lista->nombre_x,mi_lista->nombre_y);
+	}
 	
 	while(nodo_act!=NULL){
 	
@@ -126,10 +141,20 @@ void eliminar_lista(lista *mi_lista){
 		
 		free(nodo_act->nombre);
 		free(nodo_act);
-	
 	}
-
+	
+	if (mi_lista->nombre_x != NULL){
+	
+	free(mi_lista->nombre_x);
+	}
+	
+	if (mi_lista->nombre_y != NULL){
+	
+	free(mi_lista->nombre_y);
+	}
+	
 	free(mi_lista);
+	
 
 }
 
@@ -252,6 +277,338 @@ void imprimir_facelook(facelook *base_datos){
 	}
 
 }
+
+
+facelook *map(lista *mi_lista){
+
+	facelook *base_datos_nueva = (facelook *)malloc(sizeof(facelook));
+	base_datos_nueva->primero = NULL;
+	base_datos_nueva->ultimo = NULL;
+	
+	
+	nodo *nodo_act;
+	
+	lista *nueva_lista;
+	
+	nodo_act = mi_lista->primero;
+	nodo *nodo_act_amigo;
+	char *nombre_nodo_act_amigo;
+	
+	while(nodo_act != NULL){
+	
+		nueva_lista = (lista *)malloc(sizeof(lista));
+		nueva_lista->primero = NULL;
+		nueva_lista->ultimo = NULL;
+		
+		nueva_lista->nombre_x = (char *)malloc(sizeof(char)*100);
+		strcpy(nueva_lista->nombre_x,mi_lista->nombre_x);
+		
+		nueva_lista->nombre_y = (char *)malloc(sizeof(char)*100);
+		strcpy(nueva_lista->nombre_y,nodo_act->nombre);
+		
+		
+		nodo_act_amigo = mi_lista->primero;
+		
+		
+		
+		while(nodo_act_amigo != NULL){
+		
+			nombre_nodo_act_amigo = (char *)malloc(sizeof(char)*100);
+			strcpy(nombre_nodo_act_amigo,nodo_act_amigo->nombre);
+			
+			insertar_amigo(nueva_lista, nombre_nodo_act_amigo);
+			
+			nodo_act_amigo = nodo_act_amigo->siguiente;
+			
+		}
+		
+		
+		insertar_perfil(base_datos_nueva, nueva_lista);
+		
+		nodo_act = nodo_act->siguiente;
+	}
+	
+	return base_datos_nueva;
+
+}
+
+int esta_en_lista(nodo *mi_nodo, lista *mi_lista){
+
+	
+	if (strcmp(mi_nodo->nombre, mi_lista->nombre_x) == 0){
+		return 1;
+	}
+	
+	if (strcmp(mi_nodo->nombre, mi_lista->nombre_y) == 0){
+		return 1;
+	}
+	
+	nodo *nodo_act = mi_lista->primero;
+	
+	while(nodo_act != NULL){
+	
+		if (strcmp(mi_nodo->nombre, nodo_act->nombre) == 0){
+			return 1;
+		}
+		
+		nodo_act = nodo_act->siguiente;
+	}
+	
+	return 0;
+
+}
+
+int lista_len(lista *mi_lista){
+
+	int len = 0;
+	nodo *nodo_act = mi_lista->primero;
+	
+	while(nodo_act != NULL){
+	
+		len++;
+		nodo_act = nodo_act->siguiente;
+	
+	}
+	
+	return len;
+
+}
+
+
+lista *reduce(lista *lista_a, lista *lista_b){
+
+	lista *nueva_lista = (lista *)malloc(sizeof(lista));
+	nueva_lista->primero = NULL;
+	nueva_lista->ultimo = NULL;
+	
+	nueva_lista->nombre_x = (char *)malloc(sizeof(char)*100);
+	nueva_lista->nombre_y = (char *)malloc(sizeof(char)*100);
+	
+	strcpy(nueva_lista->nombre_x,lista_a->nombre_x);
+	strcpy(nueva_lista->nombre_y,lista_a->nombre_y);
+	
+	//lista *lista_corta;
+	nodo *nodo_act;
+	
+	char *nombre_act;
+	
+	if (lista_len(lista_a) <= lista_len(lista_b)){
+	
+		//lista_corta = lista_a;
+		nodo_act = lista_b->primero;
+	}
+	else{
+		//lista_corta = lista_b;
+		nodo_act = lista_a->primero;
+	}
+	
+	while(nodo_act != NULL){
+	
+		if (!esta_en_lista(nodo_act, nueva_lista)){
+		
+			nombre_act = (char *)malloc(sizeof(char)*100);
+			strcpy(nombre_act, nodo_act->nombre);
+			
+			insertar_amigo(nueva_lista, nombre_act);
+		
+		}
+		
+		nodo_act = nodo_act->siguiente;
+	
+	}
+
+	return nueva_lista;
+
+}
+
+lista *fusionar_lista(lista *mi_lista_a, lista *mi_lista_b){
+/*
+Se asume que las listas de entrada tienen los mismos nombre_x y nombre_y
+*/
+
+	lista *nueva_lista = (lista *)malloc(sizeof(lista));
+	nueva_lista->primero = NULL;
+	nueva_lista->ultimo = NULL;
+	
+	nueva_lista->nombre_x = (char *)malloc(sizeof(char)*100);
+	strcpy(nueva_lista->nombre_x,mi_lista_a->nombre_x);
+	nueva_lista->nombre_y = (char *)malloc(sizeof(char)*100);
+	strcpy(nueva_lista->nombre_y,mi_lista_b->nombre_x);
+	
+	nodo *nodo_act_a = mi_lista_a->primero;
+	nodo *nodo_act_b = mi_lista_b->primero;
+	
+	char *nombre_amigo_nuevo;
+	
+	while(nodo_act_a != NULL){
+	
+		nombre_amigo_nuevo = (char *)malloc(sizeof(char)*100);
+		strcpy(nombre_amigo_nuevo,nodo_act_a->nombre);
+		insertar_amigo(nueva_lista,nombre_amigo_nuevo);
+		
+		nodo_act_a = nodo_act_a->siguiente;
+	}
+	
+	while(nodo_act_b != NULL){
+	
+		nombre_amigo_nuevo = (char *)malloc(sizeof(char)*100);
+		strcpy(nombre_amigo_nuevo,nodo_act_b->nombre);
+		insertar_amigo(nueva_lista,nombre_amigo_nuevo);
+		
+		nodo_act_b = nodo_act_b->siguiente;
+	}
+	
+	return nueva_lista;
+
+}
+
+lista *fusionar_facelook(facelook *base_datos_a, facelook *base_datos_b){
+/*
+Se asume que los facelooks de entrada fueron creados por map
+*/
+
+
+	//facelook *nueva_base = (facelook *)malloc(sizeof(facelook));
+	//nueva_base->primero = NULL;
+	//nueva_base->ultimo = NULL;
+	
+	nodo_perfil *nodo_act_a = base_datos_a->primero;
+	nodo_perfil *nodo_act_b = base_datos_b->primero;
+	
+	lista *lista_nueva_act;
+	
+	while(nodo_act_a != NULL){
+	
+		while(nodo_act_b != NULL){
+			/*
+			if (((strcmp(nodo_act_a->perfil->nombre_x,nodo_act_b->perfil->nombre_x) == 0) 
+				&& (strcmp(nodo_act_a->perfil->nombre_y,nodo_act_b->perfil->nombre_y) == 0)) ||
+			((strcmp(nodo_act_a->perfil->nombre_x,nodo_act_b->perfil->nombre_y) == 0)
+				&&(strcmp(nodo_act_a->perfil->nombre_y,nodo_act_b->perfil->nombre_x) == 0))){
+			*/
+			
+				//printf(" %s %s - %s %s \n",nodo_act_a->perfil->nombre_x,nodo_act_a->perfil->nombre_y,
+				//						   nodo_act_b->perfil->nombre_x,nodo_act_b->perfil->nombre_y);
+			
+			if (strcmp(nodo_act_a->perfil->nombre_y,nodo_act_b->perfil->nombre_y) == 0){
+				
+				lista_nueva_act = fusionar_lista(nodo_act_a->perfil,nodo_act_b->perfil);
+				//imprimir_lista(lista_nueva_act);
+				//insertar_perfil(nueva_base,lista_nueva_act);
+				
+				return lista_nueva_act;
+			}
+			
+			nodo_act_b = nodo_act_b->siguiente;
+		}
+	
+	nodo_act_a = nodo_act_a->siguiente;
+	}
+	
+	lista_nueva_act = (lista *)malloc(sizeof(lista));
+	lista_nueva_act->nombre_x = (char *)malloc(sizeof(char)*100);
+	lista_nueva_act->nombre_y = (char *)malloc(sizeof(char)*100);
+	strcpy(lista_nueva_act->nombre_x,base_datos_a->primero->perfil->nombre_x);
+	strcpy(lista_nueva_act->nombre_y,base_datos_b->primero->perfil->nombre_x);
+	lista_nueva_act->primero = NULL;
+	lista_nueva_act->ultimo = NULL;
+	
+	char *nombre_act = (char *)malloc(sizeof(char)*100);
+	strcpy(nombre_act,"-None-");
+	insertar_amigo(lista_nueva_act,nombre_act);
+	
+	return lista_nueva_act;
+
+}
+
+
+int facelook_len(facelook *base_datos){
+
+	int len = 0;
+	nodo_perfil *nodo_act = base_datos->primero;
+	
+	while(nodo_act != NULL){
+	
+		len++;
+		nodo_act = nodo_act->siguiente;
+	
+	}
+	
+	return len;
+
+}
+
+int esta_n_veces_en_lista(nodo *mi_nodo, lista *mi_lista){
+
+	int veces = 0;
+	nodo *nodo_act = mi_lista->primero;
+	
+	while(nodo_act != NULL){
+	
+		if (strcmp(nodo_act->nombre,mi_nodo->nombre) == 0){
+		
+			veces++;
+		
+		}
+	
+		nodo_act = nodo_act->siguiente;
+	}
+	
+	return veces;
+}
+
+
+lista *reduce_2(lista *mi_lista){
+
+
+	lista *nueva_lista = (lista *)malloc(sizeof(lista));
+	nueva_lista->primero = NULL;
+	nueva_lista->ultimo = NULL;
+	
+	nueva_lista->nombre_x = (char *)malloc(sizeof(char)*100);
+	nueva_lista->nombre_y = (char *)malloc(sizeof(char)*100);
+	
+	strcpy(nueva_lista->nombre_x,mi_lista->nombre_x);
+	strcpy(nueva_lista->nombre_y,mi_lista->nombre_y);
+	
+	
+	nodo *nodo_act = mi_lista->primero;
+	
+	char *nombre_act;
+	
+	while(nodo_act != NULL){
+	
+		if ((!esta_en_lista(nodo_act, nueva_lista)) && 
+			(esta_n_veces_en_lista(nodo_act,mi_lista) > 1)){
+		
+			nombre_act = (char *)malloc(sizeof(char)*100);
+			strcpy(nombre_act, nodo_act->nombre);
+			insertar_amigo(nueva_lista,nombre_act);
+		
+		}
+		
+		nodo_act = nodo_act->siguiente;
+	
+	}
+	
+	if (nueva_lista->primero == NULL){
+		
+		nombre_act = (char *)malloc(sizeof(char)*100);
+		strcpy(nombre_act,"-None-");
+		insertar_amigo(nueva_lista, nombre_act);
+	}
+	
+	return nueva_lista;
+	
+	
+
+}
+
+
+
+
+
+
 
 
 
