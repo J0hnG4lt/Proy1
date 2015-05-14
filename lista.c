@@ -479,6 +479,9 @@ Se asume que los facelooks de entrada fueron creados por map
 	
 	while(nodo_act_a != NULL){
 	
+	
+	nodo_act_b = base_datos_b->primero;
+	
 		while(nodo_act_b != NULL){
 			/*
 			if (((strcmp(nodo_act_a->perfil->nombre_x,nodo_act_b->perfil->nombre_x) == 0) 
