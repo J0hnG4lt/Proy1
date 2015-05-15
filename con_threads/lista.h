@@ -1,6 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*
+
+Autor: Georvic Tur 
+Carnet: 12-11402
+
+*/
+
+
 struct nodos{
 
 	char *nombre;
@@ -43,15 +51,6 @@ typedef struct facelooks facelook;
 
 
 
-struct pares{
-
-	lista *x;
-	lista *y;
-
-};
-
-typedef struct pares par;
-
 void insertar_amigo(lista *, char *);
 void insertar_perfil(facelook *, lista *);
 void eliminar_lista(lista *);
@@ -67,3 +66,6 @@ lista *fusionar_lista(lista *, lista *);
 lista *fusionar_facelook(facelook *, facelook *);
 int facelook_len(facelook *);
 lista *reduce_2(lista *);
+void facelook_to_string(facelook *, char *);
+void leer_archivo_pid(facelook *facelook_array[], int *, char *);
+void leer_archivo_pid_reduce(facelook *, char *);

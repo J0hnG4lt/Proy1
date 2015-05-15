@@ -4,6 +4,13 @@
 #include <pthread.h>
 
 
+/*
+
+Autor: Georvic Tur 
+Carnet: 12-11402
+
+*/
+
 
 //Variables Globales para Threads usados en map_thread
 nodo_perfil **array_usuarios = NULL;
@@ -18,8 +25,6 @@ facelook **facelook_array = NULL;
 void *map_thread(void *num_thread){
 
 	int i;
-	int num = *(int *)num_thread;
-	//printf("Thread: %d\n", num);
 	
 	for(i = *(int *)num_thread; i < cant_usuarios; i += cant_threads ){
 	
@@ -38,7 +43,7 @@ lista **lista_array = NULL;
 int numero_pares;
 
 
-
+//Aplica reduce con threads
 void *reduce_thread(void *num_thread){
 
 	int i;
@@ -46,12 +51,7 @@ void *reduce_thread(void *num_thread){
 	
 	for(i = *(int *)num_thread; i<numero_pares; i += cant_threads){
 	
-		
-	
 		lista_array_reduced[i] = reduce_2(lista_array[i]);
-		
-		//printf("Reducidos\n");
-		//imprimir_lista(lista_array_reduced[i]);
 	
 	}
 	
@@ -100,8 +100,8 @@ int main(int argc, char **argv){
 	}
 	
 	
+	//Leo archivo y guardo en base_datos
 	leer_archivo(base_datos, nombre_arch_entrada);
-	
 	printf("Iniciales\n");
 	imprimir_facelook(base_datos);
 	
@@ -113,6 +113,8 @@ int main(int argc, char **argv){
 	
 	nodo_perfil *nodo_perfil_act = base_datos->primero;
 	
+	
+	//Guardo en arreglo
 	int j;
 	for(j=0;j<cantidad_lineas_archivo;j++){
 	
@@ -129,12 +131,11 @@ int main(int argc, char **argv){
 	pthread_t threads_array[cant_threads];
 	int *id_thread_array[cant_threads];
 	
+	
 	//Creo threads para mapear
 	
 	int d;
 	for(d=0;d<cant_threads;d++){
-	
-	
 	
 		id_thread_array[d] = (int *)malloc(sizeof(int));
 		*id_thread_array[d] = d;
@@ -145,7 +146,7 @@ int main(int argc, char **argv){
 	}
 	
 	
-	//Procedo a crear los pares
+	
 	
 	int cantidad_pares_listas = cantidad_lineas_archivo*(cantidad_lineas_archivo-1)/2;
 	
@@ -156,9 +157,12 @@ int main(int argc, char **argv){
 	numero_pares = cantidad_pares_listas;
 	
 	
+	
 	int pos_nodo_a = 0;
 	int pos_nodo_b = 1;
 	int i;
+	
+	//Creo los pares
 	
 	for(i = 0;i<cantidad_pares_listas;i++){
 		
@@ -177,14 +181,13 @@ int main(int argc, char **argv){
 	
 	}
 	
-	
+	//Ids de threads
 	pthread_t thread_array_reduce[cant_threads];
 	int *id_thread_array_reduce[cant_threads];
 	
 	
-	
+	//Creo threads para aplicar reduce
 	for(d = 0; d < cant_threads; d++){
-	
 	
 		id_thread_array_reduce[d] = (int *)malloc(sizeof(int));
 		*id_thread_array_reduce[d] = d;
@@ -196,7 +199,9 @@ int main(int argc, char **argv){
 	
 	//Procedo a quitar la redundancia
 	
-	
+	facelook *base_datos_reducida = (facelook *)malloc(sizeof(facelook));
+	base_datos_reducida->primero = NULL;
+	base_datos_reducida->ultimo = NULL;
 	
 	for(i = 0;i<cantidad_pares_listas;i++){
 	
@@ -204,10 +209,19 @@ int main(int argc, char **argv){
 		
 		printf("Reducidos\n");
 		imprimir_lista(lista_array_reduced[i]);
+		insertar_perfil(base_datos_reducida, lista_array_reduced[i]);
 	
 	}
 	
 	
+	//Limpia archivo de salida
+	FILE *archivo_salida_limpiar = fopen(nombre_arch_salida, "w");
+	fclose(archivo_salida_limpiar);
+	
+	//Guarda en archivo de salida
+	facelook_to_string(base_datos_reducida, nombre_arch_salida);
+	
+	//eliminar_facelook(base_datos_reducida);
 	
 	
 	for(i = 0;i<cantidad_pares_listas;i++){
